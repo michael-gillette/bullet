@@ -1,0 +1,43 @@
+version: '2.1'
+
+services:
+    telegraf:
+        image: telegraf:alpine
+        depends_on:
+            influxdb:
+                condition: service_healthy
+        volumes:
+            - $PWD/docker/etc/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+            - $PWD/docker/var/lib/telegraf:/var/lib/telegraf
+    influxdb:
+        image: influxdb:latest
+        ports:
+            - '8086:8086'
+        healthcheck:
+            test: ['CMD', 'curl',  '-f', 'http://localhost:8086/ping']
+        volumes:
+            - $PWD/docker/etc/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+            - $PWD/docker/var/lib/influxdb:/var/lib/influxdb
+    chronograf:
+        image: chronograf:alpine
+        depends_on:
+            influxdb:
+                condition: service_healthy
+        ports:
+            - '8888:8888'
+        volumes:
+            - $PWD/docker/etc/cbronograf/chronograf.conf:/etc/chronograf/chronograf.conf:ro
+            - $PWD/docker/var/lib/chronograf:/var/lib/chronograf
+        command: chronograf --influxdb-url=http://influxdb:8086 --kapacitor-url=http://kapacitor:9092
+    kapacitor:
+        image: kapacitor:alpine
+        depends_on:
+            influxdb:
+                condition: service_healthy
+        ports:
+            - '9092:9092'
+        volumes:
+            - $PWD/docker/etc/kapacitor/kapacitor.conf:/etc/kapacitor/kapacitor.conf:ro
+            - $PWD/docker/home/kapacitor:/home/kapacitor
+            - $PWD/docker/var/log/kapacitor:/var/log/kapacitor
+            - $PWD/docker/var/lib/kapacitor:/var/lib/kapacitor

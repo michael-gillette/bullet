@@ -1,0 +1,9 @@
+# macos
+.DS_Store
+
+# jetbrains
+.idea/
+
+# python
+__pycache__/
+*.py[co]
