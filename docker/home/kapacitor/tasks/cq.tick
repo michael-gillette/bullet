@@ -1,0 +1,19 @@
+dbrp "telegraf"."autogen"
+
+stream
+  |from()
+    .database('telegraf')
+    .retentionPolicy('autogen')
+    .measurement('cpu')
+    .groupBy(*)
+  |window()
+    .period(5m)
+    .every(5m)
+    .align()
+  |median('usage_idle')
+    .as('usage_idle')
+  |influxDBOut()
+    .database('telegraf')
+    .retentionPolicy('autogen')
+    .measurement('mean_cpu_idle')
+    .precision('s')

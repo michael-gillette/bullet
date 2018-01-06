@@ -1,0 +1,8 @@
+dbrp "telegraf"."autogen"
+
+stream
+  |from()
+    .measurement('cpu')
+  |alert()
+    .crit(lambda: "usage_idle" < 70)
+    .log('/var/log/kapacitor/alerts-stream.log')
