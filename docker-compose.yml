@@ -46,4 +46,4 @@ services:
         depends_on:
             influxdb:
                 condition: service_healthy
-        command: [ '--influx', 'influxdb://root:root@influxdb:8086/autogen' ]
+        command: [ '--influx', 'influxdb://root:root@influxdb:8086/bullet' ]

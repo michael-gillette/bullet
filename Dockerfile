@@ -12,5 +12,5 @@ RUN pipenv install --system
 
 RUN pip install --no-cache-dir .
 
-ENTRYPOINT [ '/usr/local/bin/bullet' ]
+ENTRYPOINT [ "/usr/local/bin/bullet" ]
 CMD [ ]

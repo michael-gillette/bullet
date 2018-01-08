@@ -11,6 +11,9 @@ import arrow
 from influxdb import InfluxDBClient
 
 
+logger = logging.getLogger('bullet')
+
+
 class Tag(NamedTuple):
     node: str
     layer: str
@@ -27,16 +30,21 @@ def run(options: Namespace):
     :param options: parsed arguments defined in cli.py
     :type options: Namespace
     """
+    # log arguments
+    logger.info(f'arguments {vars(options)}')
     # configure the InfluxDB connection
     client = InfluxDBClient.from_dsn(
         options.influx,
         # hold program until a connection is acquired
         retries=0
     )
+    logger.info('influx connection established')
     # the configured database needs to exist
     client.create_database(client._database)
+    logger.info(f'influx database "{client._database}" created')
     # configure the random number generator
     random.seed(options.seed)
+    logger.info(f'random number generator prepared')
     # create the requisite state
     state = new_state()
     # generate the data
@@ -47,9 +55,9 @@ def run(options: Namespace):
 
 def new_state() -> Metric:
     m = dict()
-    for node_id in range(1, 11):
+    for node_id in range(1, 5):
         for layer_id in range(1, 3):
-            for record_id in range(1, 21):
+            for record_id in range(1, 7):
                 t = Tag(
                     f'node-{node_id}',
                     f'layer-{layer_id}',
@@ -82,3 +90,6 @@ def generate(client: InfluxDBClient, state: Metric):
 
     # write all points to InfluxDB
     client.write_points(points)
+
+    # log success
+    logger.info(f'points submitted for time @ {now.isoformat()}')

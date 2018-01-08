@@ -6,7 +6,7 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from . import core, types
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 parser = ArgumentParser(prog='bullet',
@@ -16,7 +16,7 @@ parser.add_argument('--seed', type=int,
                     default=564, help='A seed for the random data generated')
 
 parser.add_argument('--influx', type=types.influxdb_dsn,
-                    default='influxdb://root:root@localhost:8086',
+                    default='influxdb://root:root@localhost:8086/bullet',
                     help='InfluxDB connection string')
 
 def main():
