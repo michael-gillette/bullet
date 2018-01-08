@@ -1,15 +1,27 @@
 # python imports
-from argparse import ArgumentParser
+import logging
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+# module imports
+from . import core, types
 
 
-parser = ArgumentParser(prog='bullet')
+logging.basicConfig(level=logging.DEBUG)
 
-parser.add_argument('--seed', type=int, default=564, help='')
 
-parser.add_argument('-s', '--server-host', type=str)
+parser = ArgumentParser(prog='bullet',
+                        formatter_class=ArgumentDefaultsHelpFormatter)
 
-parser.add_argument('-p', '--server-port', type=int, choices=range(1, 65536))
+parser.add_argument('--seed', type=int,
+                    default=564, help='A seed for the random data generated')
 
+parser.add_argument('--influx', type=types.influxdb_dsn,
+                    default='influxdb://root:root@localhost:8086',
+                    help='InfluxDB connection string')
 
 def main():
     options = parser.parse_args()
+    try:
+        core.run(options)
+    except KeyboardInterrupt:
+        raise SystemExit

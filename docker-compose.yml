@@ -41,3 +41,9 @@ services:
             - $PWD/docker/home/kapacitor:/home/kapacitor
             - $PWD/docker/var/log/kapacitor:/var/log/kapacitor
             - $PWD/docker/var/lib/kapacitor:/var/lib/kapacitor
+    generator:
+        build: .
+        depends_on:
+            influxdb:
+                condition: service_healthy
+        command: [ '--influx', 'influxdb://root:root@influxdb:8086/autogen' ]

@@ -7,3 +7,4 @@
 # python
 __pycache__/
 *.py[co]
+*.egg-info

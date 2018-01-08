@@ -12,6 +12,10 @@ setup(
     install_requires=[
         'arrow>=0.12.0',
         'influxdb>=5.0.0',
-    ]
+    ],
+    entry_points={
+        'console_scripts': [
+            'bullet = bullet.cli:main'
+        ]
+    }
 )
-
