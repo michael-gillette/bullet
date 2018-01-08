@@ -9,6 +9,7 @@ from argparse import Namespace
 # vendor imports
 import arrow
 from influxdb import InfluxDBClient
+from influxdb.exceptions import InfluxDBClientError
 
 
 logger = logging.getLogger('bullet')
@@ -42,6 +43,8 @@ def run(options: Namespace):
     # the configured database needs to exist
     client.create_database(client._database)
     logger.info(f'influx database "{client._database}" created')
+    # the continuous queries need to exist
+    configure_queries(client)
     # configure the random number generator
     random.seed(options.seed)
     logger.info(f'random number generator prepared')
@@ -93,3 +96,30 @@ def generate(client: InfluxDBClient, state: Metric):
 
     # log success
     logger.info(f'points submitted for time @ {now.isoformat()}')
+
+
+def configure_queries(client: InfluxDBClient):
+    for time in ('5s', '15s', '30s', '1m'):
+        query_name = f'bullet_metric_cq_{time}'
+        # rewriting the continuous query requires dropping the original one
+        try:
+            client.query(f'DROP CONTINUOUS QUERY {query_name} ON {client._database}')
+        except InfluxDBClientError as ex:
+            logger.info('unable to drop cq - ' + str(ex))
+        # define the continuous query
+        client.query(f'''
+            CREATE CONTINUOUS QUERY {query_name} ON {client._database}
+            RESAMPLE EVERY 5s FOR 12h
+            BEGIN
+                SELECT SUM("value") AS "value"
+                INTO "autogen"."{query_name}"
+                FROM (
+                    SELECT NON_NEGATIVE_DERIVATIVE(MAX("value"), 1s) AS "value"
+                    FROM "autogen"."bullet_metric"
+                    GROUP BY time({time}), "node", "layer", "record"
+                    FILL(none)
+                )
+                GROUP BY time({time}), "node", "record"
+                FILL(0)
+            END
+        ''')
