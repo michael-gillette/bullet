@@ -17,7 +17,7 @@ logger = logging.getLogger('bullet')
 class Tag(NamedTuple):
     node: str
     layer: str
-    genre: str
+    record: str
 
 
 Metric = Dict[Tag, int]
